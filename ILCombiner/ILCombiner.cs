@@ -8,16 +8,21 @@ using dnlib.DotNet.Emit;
 
 namespace ILCombiner {
     public class ILCombiner {
-        public enum MergeMethod {
-            EmbeddedAssemblyResolver
+        public enum CombinerMethod {
+            EmbeddedAssemblyResolver,
+            AssemblyMerger
         }
 
-        public static ModuleDef Embed(ModuleDef module, ILCombinerDependency[] dependencies, MergeMethod method) {
+        public static ModuleDef Embed(ModuleDef module, ILCombinerDependency[] dependencies, CombinerMethod method) {
             ICombiner combiner;
 
             switch (method) {
-                case MergeMethod.EmbeddedAssemblyResolver:
+                case CombinerMethod.EmbeddedAssemblyResolver:
                     combiner = new EmbeddedAssemblyResolver();
+                    break;
+
+                case CombinerMethod.AssemblyMerger:
+                    combiner = new AssemblyMerger();
                     break;
 
                 default:
@@ -27,7 +32,7 @@ namespace ILCombiner {
             return combiner.Combine(module, dependencies);
         }
 
-        public static ModuleDef Embed(ModuleDef module, string[] dependencyPaths, MergeMethod method) {
+        public static ModuleDef Embed(ModuleDef module, string[] dependencyPaths, CombinerMethod method) {
             var dependencies = new ILCombinerDependency[dependencyPaths.Length];
 
             for (var i = 0; i < dependencies.Length; i++)
@@ -36,7 +41,7 @@ namespace ILCombiner {
             return Embed(module, dependencies, method);
         }
 
-        public static ModuleDef Embed(string modulepath, string[] dependencyPaths, MergeMethod method) {
+        public static ModuleDef Embed(string modulepath, string[] dependencyPaths, CombinerMethod method) {
             return Embed(ModuleDefMD.Load(File.ReadAllBytes(modulepath)), dependencyPaths, method);
         }
     }
